@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">LGS</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_ricerca">Ricerca</string>
+    <string name="title_activity_archivio">Archivio</string>
+    <string name="title_activity_archiivio2">Archiivio2</string>
+    <string name="title_activity_arc">Arc</string>
+
+</resources>

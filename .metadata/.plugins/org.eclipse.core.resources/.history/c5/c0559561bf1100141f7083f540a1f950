@@ -1,0 +1,36 @@
+
+<head>
+<title></title>
+<style type="text/css">
+<!-- 
+img {
+    max-width: 100%;
+    height: auto;
+    width: auto\9; /* ie8 */
+}
+
+-->
+</style>
+</head><body bgcolor="b20015">
+<center>
+<img  src="./images/museo.png">
+<br>
+<img  src="./images/museo2.png">
+<br>
+<table>
+	<tr>
+		<td>
+			<a href="./1/no_bt_it.html"><img src="Italia.png" width=70 height=70></a>
+		</td>
+		<td>
+			<a href="./2/no_bt_uk.html"><img src="UK.png" width=70 height=70></a>
+		</td>
+		<td>
+			<a href="./3/no_bt_fr.html"><img src="France.png" width=70 height=70></a>
+		</td>
+	</tr>
+</table>
+
+
+</center>
+</body>

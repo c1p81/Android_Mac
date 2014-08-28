@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.luca.innocenti.ibea2.MainActivity" >
+    <item android:id="@+id/it" android:title="@string/it" android:checked="true" android:checkable="true"></item>
+    <item android:id="@+id/uk" android:title="@string/uk" android:checked="false" android:checkable="true"></item>
+    
+
+</menu>

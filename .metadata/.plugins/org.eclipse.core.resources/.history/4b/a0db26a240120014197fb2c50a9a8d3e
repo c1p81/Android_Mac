@@ -1,0 +1,174 @@
+package com.luca.innocenti.abeareader;
+
+import java.util.Collection;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.os.RemoteException;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
+import android.widget.Toast;
+
+
+
+
+import com.radiusnetworks.ibeacon.IBeaconConsumer;
+import com.radiusnetworks.ibeacon.IBeaconManager;
+import com.radiusnetworks.ibeacon.RangeNotifier;
+import com.radiusnetworks.ibeacon.IBeacon;
+import com.radiusnetworks.ibeacon.Region;
+
+@SuppressLint("SetJavaScriptEnabled")
+public class MainActivity extends Activity implements IBeaconConsumer{
+	protected static final String TAG = "RangingActivity";
+	private IBeaconManager iBeaconManager = IBeaconManager.getInstanceForApplication(this);
+	protected String old_uuid = "";
+	protected int old_major = 9999; 
+	protected int old_minor = 9999;
+	private WebView html5;
+	private int lingua = 1;
+	private Menu menu;
+
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		verifyBluetooth();
+		
+		iBeaconManager.bind(this);
+		
+		html5 = (WebView) findViewById(R.id.webView1);
+		html5.getSettings().setJavaScriptEnabled(true);
+		html5.getSettings().setAppCacheEnabled(false);
+		html5.setWebChromeClient(new WebChromeClient());
+		html5.loadUrl("file:///android_asset/www/index.html");
+
+	}
+
+	private void verifyBluetooth() {
+		try {
+			if (!IBeaconManager.getInstanceForApplication(this).checkAvailability()) {
+				final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setTitle("Bluetooth not enabled");			
+				builder.setMessage("Please enable bluetooth in settings and restart this application.");
+				builder.setPositiveButton(android.R.string.ok, null);
+				builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+					@Override
+					public void onDismiss(DialogInterface dialog) {
+						finish();
+			            System.exit(0);					
+					}					
+				});
+				builder.show();
+			}			
+		}
+		catch (RuntimeException e) {
+			final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Bluetooth LE not available");			
+			builder.setMessage("Sorry, this device does not support Bluetooth LE. Do you want to continue without the support IBeacon?");
+			builder.setPositiveButton(android.R.string.ok, null);
+			builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+				@Override
+				public void onDismiss(DialogInterface dialog) {
+					finish();
+		            System.exit(0);					
+				}					
+			});
+			builder.show();
+		}			
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		this.menu = menu;
+
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	int id = item.getItemId();
+	menu.getItem(0).setChecked(false);
+	menu.getItem(1).setChecked(false);
+
+	switch(id){
+	 case R.id.it:
+			lingua  = 1;			
+			Toast.makeText(getApplicationContext(), "Adesso impostato in italiano", Toast.LENGTH_SHORT).show();
+			Toast.makeText(getApplicationContext(), "Now Set in english", Toast.LENGTH_SHORT).show();
+			  if(item.isCheckable()) {
+		            item.setChecked(!item.isChecked());
+		        }
+			break;
+		case R.id.uk:
+			lingua = 2;
+			Toast.makeText(getApplicationContext(), "Now Set in english", Toast.LENGTH_SHORT).show();
+			  if(item.isCheckable()) {
+		            item.setChecked(!item.isChecked());
+		        }
+			break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	public void onIBeaconServiceConnect() {
+		Log.d("tretre","service connect");
+		  /*long scantime = 4000l;
+		  iBeaconManager.setForegroundScanPeriod(scantime); 
+		  iBeaconManager.setBackgroundScanPeriod(scantime);
+		  try {
+			iBeaconManager.updateScanPeriods();
+		} catch (RemoteException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}*/
+		  
+		  iBeaconManager.setRangeNotifier(new RangeNotifier() {
+		  private String beaconid;
+
+			@Override
+			public void didRangeBeaconsInRegion(Collection<IBeacon> iBeacons,Region region) {
+				Log.d("tretre","service connect");
+
+				if (iBeacons.size() > 0) {
+					for (IBeacon iBeacon : iBeacons) {                              
+            		   Log.d("tretre",iBeacon.getProximityUuid()+ "/"+ iBeacon.getMajor()+"/"+iBeacon.getMinor()+ "  -  "+iBeacon.getAccuracy()+ " " + iBeacon.getProximity()+ " Cl "+ iBeacon.getClass());
+            		   if ((iBeacon.getMajor() != old_major) && (iBeacon.getMinor() != old_minor)) 
+            		   		{
+            			   lanciaweb(iBeacon.getProximityUuid(),iBeacon.getMajor(),iBeacon.getMinor());
+	            		   Log.d("tretre","Nuovo Beacon");
+            		   		}
+            		   else
+            		   {
+	            		   Log.d("tretre","Gia' visto");
+
+            		   }
+            		   old_uuid = iBeacon.getProximityUuid();
+            		   old_major = iBeacon.getMajor();
+            		   old_minor = iBeacon.getMinor();
+            		   
+            	    }
+	             
+	            }
+			}
+
+			private void lanciaweb(String proximityUuid, int major, int minor) {
+				
+			}
+		  });
+		  
+		  
+	}
+
+}
+

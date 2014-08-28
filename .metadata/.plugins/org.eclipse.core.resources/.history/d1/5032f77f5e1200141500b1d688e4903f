@@ -1,0 +1,255 @@
+package com.luca.innocenti.abeareader;
+
+import java.util.Collection;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.os.RemoteException;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
+
+
+
+
+import com.radiusnetworks.ibeacon.IBeaconConsumer;
+import com.radiusnetworks.ibeacon.IBeaconManager;
+import com.radiusnetworks.ibeacon.RangeNotifier;
+import com.radiusnetworks.ibeacon.IBeacon;
+import com.radiusnetworks.ibeacon.Region;
+
+@SuppressLint("SetJavaScriptEnabled")
+public class MainActivity extends Activity implements IBeaconConsumer{
+	protected static final String TAG = "RangingActivity";
+	private IBeaconManager iBeaconManager = IBeaconManager.getInstanceForApplication(this);
+	protected String old_uuid = "";
+	protected int old_major = 9999; 
+	protected int old_minor = 9999;
+	private WebView html5;
+	private int maggiore = 0;
+	private String uuid = "";
+	private int minore = 0;
+	private int lingua = 1;
+	private Menu menu;
+	private String url;
+
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		//verifica che il telefono abbia BTLE		
+		verifyBluetooth();
+		
+		//fa iniziare il ranging del BT
+		iBeaconManager.bind(this);
+		
+		//mostra la pagina di home che risiede in assets
+		html5 = (WebView) findViewById(R.id.webView1);
+		html5.getSettings().setJavaScriptEnabled(true);
+		html5.getSettings().setAppCacheEnabled(false);
+		html5.setWebChromeClient(new WebChromeClient());
+		html5.loadUrl("file:///android_asset/www/index.html");
+
+	}
+	
+	 @Override 
+	    protected void onDestroy() {
+	        super.onDestroy();
+	        //in uscita disabilita il servizio
+	        iBeaconManager.unBind(this);
+	    }
+	 
+	private void verifyBluetooth() {
+		try {
+			if (!IBeaconManager.getInstanceForApplication(this).checkAvailability()) {
+				final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setTitle("Bluetooth not enabled");			
+				builder.setMessage("Please enable bluetooth in settings and restart this application.");
+				builder.setPositiveButton(android.R.string.ok, null);
+				builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+					@Override
+					public void onDismiss(DialogInterface dialog) {
+						finish();
+			            System.exit(0);					
+					}					
+				});
+				builder.show();
+			}			
+		}
+		catch (RuntimeException e) {
+			final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Bluetooth LE not available");			
+			builder.setMessage("Sorry, this device does not support Bluetooth LE. Do you want to continue without the support IBeacon?");
+			builder.setPositiveButton(android.R.string.ok, null);
+			builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+				@Override
+				public void onDismiss(DialogInterface dialog) {
+					finish();
+		            System.exit(0);					
+				}					
+			});
+			builder.show();
+		}			
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		this.menu = menu;
+
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	int id = item.getItemId();
+	menu.getItem(0).setChecked(false);
+	menu.getItem(1).setChecked(false);
+
+	switch(id){
+	 case R.id.it:
+			lingua  = 1;			
+			Toast.makeText(getApplicationContext(), "Adesso impostato in italiano", Toast.LENGTH_SHORT).show();
+			Toast.makeText(getApplicationContext(), "Now Set in english", Toast.LENGTH_SHORT).show();
+			  if(item.isCheckable()) {
+		            item.setChecked(!item.isChecked());
+		        }
+			if (minore != 0)
+				{
+				url = "http://150.217.73.79/luca/jsandroid3.php?uuid="+uuid+"&major="+Integer.toString(maggiore)+"&minor="+Integer.toString(minore)+"&lingua="+Integer.toString(lingua);
+				visualizza(url);
+				}
+  
+			break;
+		case R.id.uk:
+			lingua = 2;
+			Toast.makeText(getApplicationContext(), "Now Set in english", Toast.LENGTH_SHORT).show();
+			  if(item.isCheckable()) {
+		            item.setChecked(!item.isChecked());
+		        }
+	    	if (minore != 0)
+				{
+				url = "http://150.217.73.79/luca/jsandroid3.php?uuid="+uuid+"&major="+Integer.toString(maggiore)+"&minor="+Integer.toString(minore)+"&lingua="+Integer.toString(lingua);
+				visualizza(url);
+				}
+  
+			break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	public void visualizza(final String url)
+	{
+		new Thread( new Runnable() {     
+			public void run() {     
+				try {
+					Thread.sleep(100); 
+
+					runOnUiThread(new Runnable() { 
+						public void run() {
+		                    //Toast.makeText(MainActivity.this, "Luca", Toast.LENGTH_SHORT).show();
+							html5.loadUrl(url);
+							html5.setWebViewClient(new WebViewClient() {
+							    @Override
+							    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+							        view.loadUrl(url);
+							        return true;
+							    }
+							});
+						}
+					});
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}            
+		}).start();
+	}
+	
+	@Override
+	public void onIBeaconServiceConnect() {
+		//Log.d("tretre","service connect");
+		  long scantime = 4000l;
+		  iBeaconManager.setForegroundScanPeriod(scantime); 
+		  iBeaconManager.setBackgroundScanPeriod(scantime);
+		  try {
+			iBeaconManager.updateScanPeriods();
+		} catch (RemoteException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		  
+		  iBeaconManager.setRangeNotifier(new RangeNotifier() {
+		  //private String beaconid;
+
+			@Override
+			public void didRangeBeaconsInRegion(Collection<IBeacon> iBeacons,Region region) {
+				//Log.d("tretre","beacon visto");
+               double vicino = 10.0;
+
+
+				if (iBeacons.size() > 0) {
+					for (IBeacon iBeacon : iBeacons) {            
+						 if (iBeacon.getAccuracy() < vicino)
+	            		   {
+	            			   vicino =  iBeacon.getAccuracy();
+	            			   uuid = iBeacon.getProximityUuid();
+	            			   maggiore = iBeacon.getMajor();
+	            			   minore = iBeacon.getMinor();
+	            		   }
+						
+						if (vicino <= 5)
+						{
+	            		   //Log.d("tretre",iBeacon.getProximityUuid()+ "/"+ iBeacon.getMajor()+"/"+iBeacon.getMinor()+ "  -  "+iBeacon.getAccuracy()+ " " + iBeacon.getProximity()+ " Cl "+ iBeacon.getClass());
+	            		   if ((maggiore != old_major) && (minore != old_minor)) 
+	            		   		{
+	            			    uuid = iBeacon.getProximityUuid();
+	            			    maggiore = iBeacon.getMajor();
+	            			    minore = iBeacon.getMinor();
+	            			    lanciaweb(uuid,maggiore,minore);
+		            		   //Log.d("tretre","Nuovo Beacon");
+	            		   		}
+	            		   else
+		            		   {
+			            	   Log.d("tretre","Gia' visto");
+		            		   }
+						}
+						else
+						{
+						html5.loadUrl("file:///android_asset/www/index.html");
+
+						}
+						 
+						 
+            		   old_uuid = uuid;
+            		   old_major = maggiore;
+            		   old_minor = minore;
+            		   
+            	    }
+	             
+	            }
+			}
+
+			private void lanciaweb(String proximityUuid, int major, int minor) {
+				
+				url = "http://150.217.73.79/luca/jsandroid3.php?uuid="+proximityUuid+"&major="+Integer.toString(major)+"&minor="+Integer.toString(minor)+"&lingua="+Integer.toString(lingua);
+				Log.d("tretre",url);
+				visualizza(url);
+			}
+		  });
+		  
+		  try {
+	            iBeaconManager.startRangingBeaconsInRegion(new Region("myRangingUniqueId", null, null, null));
+	        } catch (RemoteException e) {   }
+	}
+
+}
+

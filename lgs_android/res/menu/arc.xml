@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.luca.innocenti.lgs.Arc" >
+
+   
+           <item android:id="@+id/O1" android:title="00-06"/>
+           <item android:id="@+id/O2" android:title="06-12"/>
+           <item android:id="@+id/O3" android:title="12-18"/>
+           <item android:id="@+id/O4" android:title="18-24"/>
+   
+</menu>

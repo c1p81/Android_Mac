@@ -1,0 +1,42 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.luca.innocenti.lgs.MainActivity" >
+
+    <item android:id="@+id/menu1" android:alphabeticShortcut="a"
+        android:title="MVT" android:orderInCategory="1">
+   <menu>
+       <group android:id="@+id/group1"  >
+           <item android:id="@+id/V1" android:title="Sensore 1"/>
+           <item android:id="@+id/V2" android:title="Sensore 2"/>
+           <item android:id="@+id/V3" android:title="Sensore 3"/>
+           <item android:id="@+id/V4" android:title="Sensore 4"/>
+           <item android:id="@+id/V5" android:title="Processing"/>
+           <item android:id="@+id/V6" android:title="Temperatura"/>
+           <item android:id="@+id/V7" android:title="Voltaggio"/>
+       </group>
+       
+       </menu>
+        
+    </item>
+   
+    <item android:id="@+id/menu2" android:alphabeticShortcut="b"
+        android:title="ETN" android:orderInCategory="2">
+        <menu >
+        <group android:id="@+id/group2" android:checkableBehavior="single">
+            <item android:id="@+id/S1" android:title="Sensore 1" />
+            <item android:id="@+id/S2" android:title="Sensore 2" />
+            <item android:id="@+id/S3" android:title="Sensore 3"/>
+            <item android:id="@+id/S4" android:title="Sensore 4"/>
+            <item android:id="@+id/S5" android:title="Processing"/>
+            <item android:id="@+id/S6" android:title="Temperatura"/>
+            <item android:id="@+id/S7" android:title="Voltaggio"/>
+            
+            </group>   
+        </menu>
+   
+        
+    </item>
+     <item android:id="@+id/archivio" android:alphabeticShortcut="c"
+        android:title="Archivio" android:orderInCategory="3">
+    </item>
+</menu>
